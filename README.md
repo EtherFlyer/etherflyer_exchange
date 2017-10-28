@@ -4,7 +4,7 @@ EtherFlyer Exchange Server is a trading backend with high-speed performance, des
 
 ## Architecture
 
-![30948274-4e463044-a441-11e7-881b-b50ab903ed65](https://user-images.githubusercontent.com/33028500/32134843-9e60cbaa-bc30-11e7-92f4-3173c0184668.jpg)
+![architecture](https://user-images.githubusercontent.com/33028500/32134960-134bcb4e-bc32-11e7-9dbf-1017adc4e893.jpg)
 
 For this project, it is marked as Server in this picture.
 
