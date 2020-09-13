@@ -1,55 +1,3 @@
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
-
-# Fortran module files
-*.mod
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
-core*
-*.tmp
-
-# Executables
-*.exe
-*.out
-*.app
-*dSYM
-
-# Tmp 
-*.bak
-*.swp
-*.swo
-*.txt
-*.log
-tags
-
-# Python
-*.pyc
-
-# vim
-*.un
-*.un~
-*~
-
-
-# Created by https://www.gitignore.io/api/c,vim,python,windows,visualstudio
-
-### C ###
 # Prerequisites
 *.d
 
@@ -102,6 +50,116 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+.vscode/
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+core*
+*.tmp
+
+# Executables
+*.exe
+*.out
+*.app
+*dSYM
+
+# Tmp 
+*.bak
+*.swp
+*.swo
+*.txt
+*.log
+tags
+
+# Python
+*.pyc
+
+# vim
+*.un
+*.un~
+*~
+
+
+# Created by https://www.gitignore.io/api/c,vim,python,windows,visualstudio
+
+### C ###
+>>>>>>> remotes/viabtc/master
+# Prerequisites
+*.d
+
+# Object files
+*.o
+*.ko
+*.obj
+*.elf
+
+# Linker output
+*.ilk
+*.map
+*.exp
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Libraries
+*.lib
+*.a
+*.la
+*.lo
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Executables
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+
+# Debug files
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# Kernel Module Compile Results
+*.mod*
+*.cmd
+.tmp_versions/
+modules.order
+Module.symvers
+Mkfile.old
+dkms.conf
+<<<<<<< HEAD
+=======
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
@@ -523,4 +581,3 @@ paket-files/
 # wireshark
 *.cap
 
-# End of https://www.gitignore.io/api/c,vim,python,windows,visualstudio

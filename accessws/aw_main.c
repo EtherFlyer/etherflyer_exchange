@@ -7,9 +7,11 @@
 # include "aw_config.h"
 # include "aw_server.h"
 # include "aw_auth.h"
+# include "aw_sign.h"
 # include "aw_kline.h"
 # include "aw_depth.h"
 # include "aw_price.h"
+# include "aw_state.h"
 # include "aw_today.h"
 # include "aw_deals.h"
 # include "aw_order.h"
@@ -123,6 +125,10 @@ server:
     if (ret < 0) {
         error(EXIT_FAILURE, errno, "init auth fail: %d", ret);
     }
+    ret = init_sign();
+    if (ret < 0) {
+        error(EXIT_FAILURE, errno, "init sing fail: %d", ret);
+    }
     ret = init_kline();
     if (ret < 0) {
         error(EXIT_FAILURE, errno, "init kline fail: %d", ret);
@@ -134,6 +140,10 @@ server:
     ret = init_price();
     if (ret < 0) {
         error(EXIT_FAILURE, errno, "init price fail: %d", ret);
+    }
+    ret = init_state();
+    if (ret < 0) {
+        error(EXIT_FAILURE, errno, "init state fail: %d", ret);
     }
     ret = init_today();
     if (ret < 0) {

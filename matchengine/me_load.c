@@ -16,7 +16,7 @@ int load_orders(MYSQL *conn, const char *table)
     while (true) {
         sds sql = sdsempty();
         sql = sdscatprintf(sql, "SELECT `id`, `t`, `side`, `create_time`, `update_time`, `user_id`, `market`, "
-                "`price`, `amount`, `taker_fee`, `maker_fee`, `left`, `freeze`, `deal_stock`, `deal_money`, `deal_fee` FROM `%s` "
+                "`price`, `amount`, `taker_fee`, `maker_fee`, `left`, `freeze`, `deal_stock`, `deal_money`, `deal_fee`, `source` FROM `%s` "
                 "WHERE `id` > %"PRIu64" ORDER BY `id` LIMIT %zu", table, last_id, query_limit);
         log_trace("exec sql: %s", sql);
         int ret = mysql_real_query(conn, sql, sdslen(sql));
@@ -54,6 +54,8 @@ int load_orders(MYSQL *conn, const char *table)
             order->deal_stock = decimal(row[13], 0);
             order->deal_money = decimal(row[14], 0);
             order->deal_fee = decimal(row[15], 0);
+            if (row[16] != NULL)
+                order->source = strdup(row[16]);
 
             if (!order->market || !order->price || !order->amount || !order->taker_fee || !order->maker_fee || !order->left ||
                     !order->freeze || !order->deal_stock || !order->deal_money || !order->deal_fee) {
@@ -412,10 +414,12 @@ int load_operlog(MYSQL *conn, const char *table, uint64_t *start_id)
         for (size_t i = 0; i < num_rows; ++i) {
             MYSQL_ROW row = mysql_fetch_row(result);
             uint64_t id = strtoull(row[0], NULL, 0);
+/* 20180519
             if (id != last_id + 1) {
                 log_error("invalid id: %"PRIu64", last id: %"PRIu64"", id, last_id);
                 return -__LINE__;
             }
+*/
             last_id = id;
             json_t *detail = json_loadb(row[1], strlen(row[1]), 0, NULL);
             if (detail == NULL) {

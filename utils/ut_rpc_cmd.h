@@ -10,6 +10,8 @@
 # define CMD_BALANCE_QUERY          101
 # define CMD_BALANCE_UPDATE         102
 # define CMD_BALANCE_HISTORY        103
+# define CMD_ASSET_LIST             104
+# define CMD_ASSET_SUMMARY          105
 
 // trade
 # define CMD_ORDER_PUT_LIMIT        201
@@ -22,6 +24,8 @@
 # define CMD_ORDER_HISTORY          208
 # define CMD_ORDER_DEALS            209
 # define CMD_ORDER_DETAIL_FINISHED  210
+# define CMD_ORDER_QUERY_ALL        211
+# define CMD_ORDER_HISTORY_ALL      212
 
 // market
 # define CMD_MARKET_STATUS          301
@@ -30,6 +34,10 @@
 # define CMD_MARKET_LAST            304
 # define CMD_MARKET_STATUS_TODAY    305
 # define CMD_MARKET_USER_DEALS      306
+# define CMD_MARKET_LIST            307
+# define CMD_MARKET_SUMMARY         308
+# define CMD_MARKET_ADD             351
+# define CMD_MARKET_STATUS_LIST     352
 
 # endif
 

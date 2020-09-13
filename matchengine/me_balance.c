@@ -127,6 +127,17 @@ int init_balance()
     return 0;
 }
 
+int init_balance_by_id(int id)
+{
+    struct asset_type type;
+    type.prec_save = settings.assets[id].prec_save;
+    type.prec_show = settings.assets[id].prec_show;
+    if (dict_add(dict_asset, settings.assets[id].name, &type) == NULL)
+        return -__LINE__;
+
+    return 0;
+}
+
 static struct asset_type *get_asset_type(const char *asset)
 {
     dict_entry *entry = dict_find(dict_asset, asset);
@@ -352,9 +363,11 @@ int balance_status(const char *asset, mpd_t *total, size_t *available_count, mpd
         if (key->type == BALANCE_TYPE_AVAILABLE) {
             *available_count += 1;
             mpd_add(available, available, entry->val, &mpd_ctx);
+            log_info("<balance> asset: [%s]; userid: [%u]; available: [%s]", asset, key->user_id, mpd_to_sci(entry->val, 0));
         } else {
             *freeze_count += 1;
             mpd_add(freeze, freeze, entry->val, &mpd_ctx);
+            log_info("<balance> asset: [%s]; userid: [%u]; freeze: [%s]", asset, key->user_id, mpd_to_sci(entry->val, 0));
         }
     }
     dict_release_iterator(iter);

@@ -53,6 +53,18 @@ int init_trade(void)
     return 0;
 }
 
+int init_market_by_id(int id)
+{
+    market_t *m = market_create(&settings.markets[id]);
+    if (m == NULL) {
+        return -__LINE__;
+    }
+
+    dict_add(dict_market, settings.markets[id].name, m);
+
+    return 0;
+}
+
 market_t *get_market(const char *name)
 {
     dict_entry *entry = dict_find(dict_market, name);

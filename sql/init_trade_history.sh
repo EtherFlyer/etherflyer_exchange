@@ -1,8 +1,8 @@
 #!/bin/bash
 
 MYSQL_HOST="localhost"
-MYSQL_USER="root"
-MYSQL_PASS="shit"
+MYSQL_USER="user"
+MYSQL_PASS="pass"
 MYSQL_DB="trade_history"
 
 for i in `seq 0 99`
@@ -27,4 +27,10 @@ for i in `seq 0 99`
 do
     echo "create table deal_history_$i"
     mysql -h$MYSQL_HOST -u$MYSQL_USER -p$MYSQL_PASS $MYSQL_DB -e "CREATE TABLE deal_history_$i LIKE deal_history_example;"
+done
+
+for i in `seq 0 99`
+do
+    echo "create table user_deal_history_$i"
+    mysql -h$MYSQL_HOST -u$MYSQL_USER -p$MYSQL_PASS $MYSQL_DB -e "CREATE TABLE user_deal_history_$i LIKE user_deal_history_example;"
 done

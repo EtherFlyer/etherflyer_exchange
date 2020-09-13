@@ -258,27 +258,36 @@ static int add_handler(char *method, rpc_clt *clt, uint32_t cmd)
 
 static int init_methods_handler(void)
 {
-    ERR_RET_LN(add_handler("balance.query", matchengine, CMD_BALANCE_QUERY));
-    ERR_RET_LN(add_handler("balance.update", matchengine, CMD_BALANCE_UPDATE));
-    ERR_RET_LN(add_handler("balance.history", readhistory, CMD_BALANCE_HISTORY));
+    ERR_RET_LN(add_handler("ef.asset.list", matchengine, CMD_ASSET_LIST));
+    ERR_RET_LN(add_handler("ef.asset.summary", matchengine, CMD_ASSET_SUMMARY));
 
-    ERR_RET_LN(add_handler("order.put_limit", matchengine, CMD_ORDER_PUT_LIMIT));
-    ERR_RET_LN(add_handler("order.put_market", matchengine, CMD_ORDER_PUT_MARKET));
-    ERR_RET_LN(add_handler("order.cancel", matchengine, CMD_ORDER_CANCEL));
-    ERR_RET_LN(add_handler("order.book", matchengine, CMD_ORDER_BOOK));
-    ERR_RET_LN(add_handler("order.depth", matchengine, CMD_ORDER_BOOK_DEPTH));
-    ERR_RET_LN(add_handler("order.pending", matchengine, CMD_ORDER_QUERY));
-    ERR_RET_LN(add_handler("order.pending_detail", matchengine, CMD_ORDER_DETAIL));
-    ERR_RET_LN(add_handler("order.deals", readhistory, CMD_ORDER_DEALS));
-    ERR_RET_LN(add_handler("order.finished", readhistory, CMD_ORDER_HISTORY));
-    ERR_RET_LN(add_handler("order.finished_detail", readhistory, CMD_ORDER_DETAIL_FINISHED));
+    ERR_RET_LN(add_handler("ef.balance.query", matchengine, CMD_BALANCE_QUERY));
+    ERR_RET_LN(add_handler("ef.balance.update", matchengine, CMD_BALANCE_UPDATE));
+    ERR_RET_LN(add_handler("ef.balance.history", readhistory, CMD_BALANCE_HISTORY));
 
-    ERR_RET_LN(add_handler("market.last", marketprice, CMD_MARKET_LAST));
-    ERR_RET_LN(add_handler("market.deals", marketprice, CMD_MARKET_DEALS));
-    ERR_RET_LN(add_handler("market.kline", marketprice, CMD_MARKET_KLINE));
-    ERR_RET_LN(add_handler("market.status", marketprice, CMD_MARKET_STATUS));
-    ERR_RET_LN(add_handler("market.status_today", marketprice, CMD_MARKET_STATUS_TODAY));
-    ERR_RET_LN(add_handler("market.user_deals", readhistory, CMD_MARKET_USER_DEALS));
+    ERR_RET_LN(add_handler("ef.order.put_limit", matchengine, CMD_ORDER_PUT_LIMIT));
+    ERR_RET_LN(add_handler("ef.order.put_market", matchengine, CMD_ORDER_PUT_MARKET));
+    ERR_RET_LN(add_handler("ef.order.cancel", matchengine, CMD_ORDER_CANCEL));
+    ERR_RET_LN(add_handler("ef.order.book", matchengine, CMD_ORDER_BOOK));
+    ERR_RET_LN(add_handler("ef.order.depth", matchengine, CMD_ORDER_BOOK_DEPTH));
+    ERR_RET_LN(add_handler("ef.order.pending", matchengine, CMD_ORDER_QUERY));
+    ERR_RET_LN(add_handler("ef.order.pending_detail", matchengine, CMD_ORDER_DETAIL));
+    ERR_RET_LN(add_handler("ef.order.pending_all", matchengine, CMD_ORDER_QUERY_ALL));
+    ERR_RET_LN(add_handler("ef.order.deals", readhistory, CMD_ORDER_DEALS));
+    ERR_RET_LN(add_handler("ef.order.finished", readhistory, CMD_ORDER_HISTORY));
+    ERR_RET_LN(add_handler("ef.order.finished_detail", readhistory, CMD_ORDER_DETAIL_FINISHED));
+    ERR_RET_LN(add_handler("ef.order.finished_all", readhistory, CMD_ORDER_HISTORY_ALL));
+
+    ERR_RET_LN(add_handler("ef.market.last", marketprice, CMD_MARKET_LAST));
+    ERR_RET_LN(add_handler("ef.market.deals", marketprice, CMD_MARKET_DEALS));
+    ERR_RET_LN(add_handler("ef.market.kline", marketprice, CMD_MARKET_KLINE));
+    ERR_RET_LN(add_handler("ef.market.status", marketprice, CMD_MARKET_STATUS));
+    ERR_RET_LN(add_handler("ef.market.status_today", marketprice, CMD_MARKET_STATUS_TODAY));
+    ERR_RET_LN(add_handler("ef.market.user_deals", readhistory, CMD_MARKET_USER_DEALS));
+    ERR_RET_LN(add_handler("ef.market.list", matchengine, CMD_MARKET_LIST));
+    ERR_RET_LN(add_handler("ef.market.summary", matchengine, CMD_MARKET_SUMMARY));
+    ERR_RET_LN(add_handler("ef.market.add", matchengine, CMD_MARKET_ADD));
+    ERR_RET_LN(add_handler("ef.market.status_list", marketprice, CMD_MARKET_STATUS_LIST));
 
     return 0;
 }

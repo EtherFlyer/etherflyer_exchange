@@ -39,7 +39,7 @@
 
 # define ASSET_NAME_MAX_LEN     15
 # define BUSINESS_NAME_MAX_LEN  31
-# define SOURCE_MAX_LEN         31
+# define SOURCE_MAX_LEN         513
 
 # define ORDER_BOOK_MAX_LEN     101
 # define ORDER_LIST_MAX_LEN     101
@@ -47,6 +47,9 @@
 # define MAX_PENDING_OPERLOG    100
 # define MAX_PENDING_HISTORY    1000
 # define MAX_PENDING_MESSAGE    1000
+
+# define MAX_ASSET_LIST         2000
+# define MAX_MARKET_LIST        2000
 
 struct asset {
     char                *name;
@@ -84,12 +87,16 @@ struct settings {
     int                 slice_interval;
     int                 slice_keeptime;
     int                 history_thread;
+    int                 bot_user_id;
     double              cache_timeout;
 };
 
 extern struct settings settings;
 
 int init_config(const char *path);
+
+int get_asset_config(const char *asset_name);
+int get_market_config(const char *market_name);
 
 # endif
 

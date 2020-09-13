@@ -9,6 +9,7 @@
 # include "me_market.h"
 
 int init_trade(void);
+int init_market_by_id(int id);
 market_t *get_market(const char *name);
 
 # endif

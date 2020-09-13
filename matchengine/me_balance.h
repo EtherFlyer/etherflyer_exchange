@@ -11,6 +11,8 @@
 # define BALANCE_TYPE_AVAILABLE 1
 # define BALANCE_TYPE_FREEZE    2
 
+# define EF_USER_ID             1
+
 extern dict_t *dict_balance;
 
 struct balance_key {
@@ -20,6 +22,7 @@ struct balance_key {
 };
 
 int init_balance(void);
+int init_balance_by_id(int id);
 
 bool asset_exist(const char *asset);
 int asset_prec(const char *asset);

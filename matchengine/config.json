@@ -5,7 +5,7 @@
         "core_limit": 1000000000
     },
     "log": {
-        "path": "/var/log/trade/matchengine",
+        "path": "/home/deploy/etherflyer_exchange_server/deploy/log/matchengine",
         "flag": "fatal,error,warn,info,debug,trace",
         "num": 10
     },
@@ -26,112 +26,153 @@
     "db_log": {
         "host": "localhost",
         "user": "root",
-        "pass": "shit",
+        "pass": "rootroot",
         "name": "trade_log"
     },
     "db_history": {
         "host": "localhost",
         "user": "root",
-        "pass": "shit",
+        "pass": "rootroot",
         "name": "trade_history"
     },
     "assets": [
         {
-            "name": "USD",
-            "prec_save": 16,
-            "prec_show": 4
-        }, {
-            "name": "BTC",
-            "prec_save": 16,
-            "prec_show": 8
-        }, {
-            "name": "BCC",
-            "prec_save": 16,
-            "prec_show": 8
-        }, {
-            "name": "LTC",
-            "prec_save": 8,
-            "prec_show": 8
-        }, {
             "name": "ETH",
+            "prec_save": 18,
+            "prec_show": 18
+        }, {
+            "name": "TCASH",
             "prec_save": 8,
             "prec_show": 8
         }, {
-            "name": "ZEC",
+            "name": "EOS",
+            "prec_save": 18,
+            "prec_show": 8
+        }, {
+            "name": "OMG",
+            "prec_save": 18,
+            "prec_show": 8
+        }, {
+            "name": "TRX",
+            "prec_save": 6,
+            "prec_show": 6
+        }, {
+            "name": "VEN",
+            "prec_save": 18,
+            "prec_show": 8
+        }, {
+            "name": "PPT",
             "prec_save": 8,
             "prec_show": 8
         }, {
-            "name": "DASH",
-            "prec_save": 8,
+            "name": "DDD",
+            "prec_save": 18,
             "prec_show": 8
+        }, {
+            "name": "BKX",
+            "prec_save": 18,
+            "prec_show": 8
+        }, {
+            "name": "SMS",
+            "prec_save": 3,
+            "prec_show": 3
         }
     ],
     "markets": [
         {
-            "name": "BTCUSD",
+            "name": "TCASHETH",
             "stock": {
-                "name": "BTC",
+                "name": "TCASH",
                 "prec": 4
             },
             "money": {
-                "name": "USD",
-                "prec": 2
-            },
-            "min_amount": "0.001"
-        }, {
-            "name": "BCCUSD",
-            "stock": {
-                "name": "BCC",
-                "prec": 4
-            },
-            "money": {
-                "name": "USD",
-                "prec": 2
-            },
-            "min_amount": "0.001"
-        }, {
-            "name": "ETHUSD",
-            "stock": {
                 "name": "ETH",
-                "prec": 4
-            },
-            "money": {
-                "name": "USD",
-                "prec": 2
+                "prec": 8
             }
         }, {
-            "name": "ZECUSD",
+            "name": "EOSETH",
             "stock": {
-                "name": "ZEC",
+                "name": "EOS",
                 "prec": 4
             },
             "money": {
-                "name": "USD",
-                "prec": 2
+                "name": "ETH",
+                "prec": 8
             }
         }, {
-            "name": "LTCUSD",
+            "name": "OMGETH",
             "stock": {
-                "name": "LTC",
+                "name": "OMG",
                 "prec": 4
             },
             "money": {
-                "name": "USD",
-                "prec": 2
+                "name": "ETH",
+                "prec": 8
             }
         }, {
-            "name": "DASHUSD",
+            "name": "TRXETH",
             "stock": {
-                "name": "DASH",
+                "name": "TRX",
+                "prec": 2
+            },
+            "money": {
+                "name": "ETH",
+                "prec": 8
+            }
+        }, {
+            "name": "VENETH",
+            "stock": {
+                "name": "VEN",
                 "prec": 4
             },
             "money": {
-                "name": "USD",
-                "prec": 2
+                "name": "ETH",
+                "prec": 8
+            }
+        }, {
+            "name": "PPTETH",
+            "stock": {
+                "name": "PPT",
+                "prec": 4
+            },
+            "money": {
+                "name": "ETH",
+                "prec": 8
+            }
+        }, {
+            "name": "DDDETH",
+            "stock": {
+                "name": "DDD",
+                "prec": 4
+            },
+            "money": {
+                "name": "ETH",
+                "prec": 8
+            }
+        }, {
+            "name": "BKXETH",
+            "stock": {
+                "name": "BKX",
+                "prec": 4
+            },
+            "money": {
+                "name": "ETH",
+                "prec": 8
+            }
+        }, {
+            "name": "SMSETH",
+            "stock": {
+                "name": "SMS",
+                "prec": 3
+            },
+            "money": {
+                "name": "ETH",
+                "prec": 8
             }
         }
     ],
     "brokers": "127.0.0.1:9092",
     "slice_interval": 3600,
-    "slice_keeptime": 259200 
+    "slice_keeptime": 259200,
+    "bot_user_id": 137
 }

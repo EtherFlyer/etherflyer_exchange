@@ -1,19 +1,24 @@
 /*
  * Description: 
- *     History: yang@haipo.me, 2017/04/27, create
+ *     History: yang@haipo.me, 2017/11/02, create
  */
 
 # include <curl/curl.h>
-# include <sys/time.h>
 
 # include "aw_config.h"
 # include "aw_server.h"
 # include "aw_asset.h"
 # include "aw_order.h"
-# include "aw_auth.h"
+# include "aw_sign.h"
 
 static nw_job *job_context;
 static nw_state *state_context;
+
+struct sign_request {
+    sds access_id;
+    sds authorisation;
+    uint64_t tonce;
+};
 
 struct state_data {
     nw_ses *ses;
@@ -32,30 +37,28 @@ static size_t post_write_callback(char *ptr, size_t size, size_t nmemb, void *us
 static void on_job(nw_job_entry *entry, void *privdata)
 {
     CURL *curl = curl_easy_init();
+    struct sign_request *request = entry->request;
+
     sds reply = sdsempty();
     sds token = sdsempty();
-
-    time_t now;
-    time(&now);
-
-    json_t *request = json_object();
-    json_object_set_new(request, "name", json_string("get.jwtdata"));
-    json_object_set_new(request, "timestamp", json_integer(now));
-    char *request_data = json_dumps(request, 0);
-    json_decref(request);
-
+    sds url   = sdsempty();
     struct curl_slist *chunk = NULL;
-    token = sdscatprintf(token, "Authorization: %s", (sds)entry->request);
+
+    char *access_id = curl_easy_escape(curl, request->access_id, 0);
+    url = sdscatprintf(url, "%s?access_id=%s&tonce=%"PRIu64, settings.sign_url, access_id, request->tonce);
+    free(access_id);
+
+    token = sdscatprintf(token, "Authorization: %s", request->authorisation);
     chunk = curl_slist_append(chunk, token);
     chunk = curl_slist_append(chunk, "Accept-Language: en_US");
     chunk = curl_slist_append(chunk, "Content-Type: application/json");
+
     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, chunk);
-    curl_easy_setopt(curl, CURLOPT_URL, settings.auth_url);
+    curl_easy_setopt(curl, CURLOPT_URL, url);
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, post_write_callback);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &reply);
     curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1);
     curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, (long)(settings.backend_timeout * 1000));
-    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, request_data);
 
     CURLcode ret = curl_easy_perform(curl);
     if (ret != CURLE_OK) {
@@ -70,13 +73,13 @@ static void on_job(nw_job_entry *entry, void *privdata)
 
 cleanup:
     curl_easy_cleanup(curl);
-    free(request_data);
     sdsfree(reply);
     sdsfree(token);
+    sdsfree(url);
     curl_slist_free_all(chunk);
 }
 
-static void on_result(struct state_data *state, sds token, json_t *result)
+static void on_result(struct state_data *state, struct sign_request *request, json_t *result)
 {
     if (state->ses->id != state->ses_id)
         return;
@@ -86,12 +89,13 @@ static void on_result(struct state_data *state, sds token, json_t *result)
     json_t *code = json_object_get(result, "code");
     if (code == NULL)
         goto error;
-    const char *error_code = json_string_value(code);
-    if (strcmp(error_code, "0") != 0) {
-        const char *message = json_string_value(json_object_get(result, "msg"));
+    int error_code = json_integer_value(code);
+    if (error_code != 0) {
+        const char *message = json_string_value(json_object_get(result, "message"));
         if (message == NULL)
             goto error;
-        log_error("auth fail, token: %s, code: %s, message: %s", token, error_code, message);
+        log_error("sign fail, access_id: %s, authorisation: %s, token: %"PRIu64" code: %d, message: %s",
+                request->access_id, request->authorisation, request->tonce, error_code, message);
         send_error(state->ses, state->request_id, 11, message);
         return;
     }
@@ -100,7 +104,7 @@ static void on_result(struct state_data *state, sds token, json_t *result)
     if (data == NULL)
         goto error;
     struct clt_info *info = state->info;
-    uint32_t user_id = json_integer_value(json_object_get(data, "userId"));
+    uint32_t user_id = json_integer_value(json_object_get(data, "user_id"));
     if (user_id == 0)
         goto error;
 
@@ -111,7 +115,7 @@ static void on_result(struct state_data *state, sds token, json_t *result)
 
     info->auth = true;
     info->user_id = user_id;
-    log_info("auth success, token: %s, user_id: %u", token, info->user_id);
+    log_error("sign success, access_id: %s, user_id: %u", request->access_id, user_id);
     send_success(state->ses, state->request_id);
 
     return;
@@ -136,7 +140,10 @@ static void on_finish(nw_job_entry *entry)
 
 static void on_cleanup(nw_job_entry *entry)
 {
-    sdsfree(entry->request);
+    struct sign_request *request = entry->request;
+    sdsfree(request->access_id);
+    sdsfree(request->authorisation);
+    free(request);
     if (entry->reply)
         json_decref(entry->reply);
 }
@@ -149,15 +156,18 @@ static void on_timeout(nw_state_entry *entry)
     }
 }
 
-int send_auth_request(nw_ses *ses, uint64_t id, struct clt_info *info, json_t *params)
+int send_sign_request(nw_ses *ses, uint64_t id, struct clt_info *info, json_t *params)
 {
-    if (json_array_size(params) != 2)
+    if (json_array_size(params) != 3)
         return send_error_invalid_argument(ses, id);
-    const char *token = json_string_value(json_array_get(params, 0));
-    if (token == NULL)
+    const char *access_id = json_string_value(json_array_get(params, 0));
+    if (access_id == NULL)
         return send_error_invalid_argument(ses, id);
-    const char *source = json_string_value(json_array_get(params, 1));
-    if (source == NULL || strlen(source) >= SOURCE_MAX_LEN)
+    const char *authorisation = json_string_value(json_array_get(params, 1));
+    if (authorisation == NULL)
+        return send_error_invalid_argument(ses, id);
+    uint64_t tonce = json_integer_value(json_array_get(params, 2));
+    if (tonce == 0)
         return send_error_invalid_argument(ses, id);
 
     nw_state_entry *entry = nw_state_add(state_context, settings.backend_timeout, 0);
@@ -167,23 +177,27 @@ int send_auth_request(nw_ses *ses, uint64_t id, struct clt_info *info, json_t *p
     state->request_id = id;
     state->info = info;
 
-    log_info("send auth request, token: %s, source: %s", token, source);
-    info->source = strdup(source);
-    nw_job_add(job_context, entry->id, sdsnew(token));
+    log_info("send sign request, access_id: %s, authorisation: %s, tonce: %"PRIu64, access_id, authorisation, tonce);
+    info->source = strdup("api");
+
+    struct sign_request *request = malloc(sizeof(struct sign_request));
+    request->access_id = sdsnew(access_id);
+    request->authorisation = sdsnew(authorisation);
+    request->tonce = tonce;
+    nw_job_add(job_context, entry->id, request);
 
     return 0;
 }
 
-int init_auth(void)
+int init_sign(void)
 {
-
     nw_job_type jt;
     memset(&jt, 0, sizeof(jt));
     jt.on_job = on_job;
     jt.on_finish = on_finish;
     jt.on_cleanup = on_cleanup;
 
-    job_context = nw_job_create(&jt, 10);
+    job_context = nw_job_create(&jt, 5);
     if (job_context == NULL)
         return -__LINE__;
 

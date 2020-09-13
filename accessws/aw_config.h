@@ -40,7 +40,7 @@
 # define ASSET_NAME_MAX_LEN     16
 # define MARKET_NAME_MAX_LEN    16
 # define SOURCE_MAX_LEN         32
-# define INTERVAL_MAX_LEN       10
+# define INTERVAL_MAX_LEN       16
 
 # define AW_LISTENER_BIND   "seqpacket@/tmp/accessws_listener.sock"
 
@@ -68,11 +68,13 @@ struct settings {
 
     int                 worker_num;
     char                *auth_url;
+    char                *sign_url;
     double              backend_timeout;
     double              cache_timeout;
 
     double              deals_interval;
     double              price_interval;
+    double              state_interval;
     double              today_interval;
     double              kline_interval;
     double              depth_interval;

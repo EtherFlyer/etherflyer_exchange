@@ -3,16 +3,17 @@
  *     History: yang@haipo.me, 2017/04/06, create
  */
 
-# include "me_config.h"
-# include "me_history.h"
-# include "me_balance.h"
+#include "me_config.h"
+#include "me_history.h"
+#include "me_balance.h"
 
 static MYSQL *mysql_conn;
 static nw_job *job;
 static dict_t *dict_sql;
 static nw_timer timer;
 
-enum {
+enum
+{
     HISTORY_USER_BALANCE,
     HISTORY_USER_ORDER,
     HISTORY_USER_DEAL,
@@ -20,7 +21,8 @@ enum {
     HISTORY_ORDER_DEAL,
 };
 
-struct dict_sql_key {
+struct dict_sql_key
+{
     uint32_t type;
     uint32_t hash;
 };
@@ -57,9 +59,11 @@ static void on_job(nw_job_entry *entry, void *privdata)
     MYSQL *conn = privdata;
     sds sql = entry->request;
     log_trace("exec sql: %s", sql);
-    while (true) {
+    while (true)
+    {
         int ret = mysql_real_query(conn, sql, sdslen(sql));
-        if (ret != 0 && mysql_errno(conn) != 1062) {
+        if (ret != 0 && mysql_errno(conn) != 1062)
+        {
             log_fatal("exec sql: %s fail: %d %s", sql, mysql_errno(conn), mysql_error(conn));
             usleep(1000 * 1000);
             continue;
@@ -83,14 +87,16 @@ static void on_timer(nw_timer *t, void *privdata)
     size_t count = 0;
     dict_iterator *iter = dict_get_iterator(dict_sql);
     dict_entry *entry;
-    while ((entry = dict_next(iter)) != NULL) {
+    while ((entry = dict_next(iter)) != NULL)
+    {
         nw_job_add(job, 0, entry->val);
         dict_delete(dict_sql, entry->key);
         count++;
     }
     dict_release_iterator(iter);
 
-    if (count) {
+    if (count)
+    {
         log_debug("flush history count: %zu", count);
     }
 }
@@ -105,20 +111,21 @@ int init_history(void)
 
     dict_types dt;
     memset(&dt, 0, sizeof(dt));
-    dt.hash_function  = dict_sql_hash_function;
-    dt.key_compare    = dict_sql_key_compare;
-    dt.key_dup        = dict_sql_key_dup;
+    dt.hash_function = dict_sql_hash_function;
+    dt.key_compare = dict_sql_key_compare;
+    dt.key_dup = dict_sql_key_dup;
     dt.key_destructor = dict_sql_key_free;
 
     dict_sql = dict_create(&dt, 1024);
-    if (dict_sql == 0) {
+    if (dict_sql == 0)
+    {
         return -__LINE__;
     }
 
     nw_job_type jt;
     memset(&jt, 0, sizeof(jt));
-    jt.on_init    = on_job_init;
-    jt.on_job     = on_job;
+    jt.on_init = on_job_init;
+    jt.on_job = on_job;
     jt.on_cleanup = on_job_cleanup;
     jt.on_release = on_job_release;
 
@@ -146,7 +153,8 @@ static sds sql_append_mpd(sds sql, mpd_t *val, bool comma)
 {
     char *str = mpd_to_sci(val, 0);
     sql = sdscatprintf(sql, "'%s'", str);
-    if (comma) {
+    if (comma)
+    {
         sql = sdscatprintf(sql, ", ");
     }
     free(str);
@@ -156,10 +164,12 @@ static sds sql_append_mpd(sds sql, mpd_t *val, bool comma)
 static sds get_sql(struct dict_sql_key *key)
 {
     dict_entry *entry = dict_find(dict_sql, key);
-    if (!entry) {
+    if (!entry)
+    {
         sds val = sdsempty();
         entry = dict_add(dict_sql, key, val);
-        if (entry == NULL) {
+        if (entry == NULL)
+        {
             sdsfree(val);
             return NULL;
         }
@@ -170,7 +180,8 @@ static sds get_sql(struct dict_sql_key *key)
 static void set_sql(struct dict_sql_key *key, sds sql)
 {
     dict_entry *entry = dict_find(dict_sql, key);
-    if (entry) {
+    if (entry)
+    {
         entry->val = sql;
     }
 }
@@ -184,15 +195,19 @@ static int append_user_order(order_t *order)
     if (sql == NULL)
         return -__LINE__;
 
-    if (sdslen(sql) == 0) {
+    if (sdslen(sql) == 0)
+    {
         sql = sdscatprintf(sql, "INSERT INTO `order_history_%u` (`id`, `create_time`, `finish_time`, `user_id`, "
-                "`market`, `source`, `t`, `side`, `price`, `amount`, `taker_fee`, `maker_fee`, `deal_stock`, `deal_money`, `deal_fee`) VALUES ", key.hash);
-    } else {
+                                "`market`, `source`, `t`, `side`, `price`, `amount`, `taker_fee`, `maker_fee`, `deal_stock`, `deal_money`, `deal_fee`) VALUES ",
+                           key.hash);
+    }
+    else
+    {
         sql = sdscatprintf(sql, ", ");
     }
 
-    sql = sdscatprintf(sql, "(%"PRIu64", %f, %f, %u, '%s', '%s', %u, %u, ", order->id,
-        order->create_time, order->update_time, order->user_id, order->market, order->source, order->type, order->side);
+    sql = sdscatprintf(sql, "(%" PRIu64 ", %f, %f, %u, '%s', '%s', %u, %u, ", order->id,
+                       order->create_time, order->update_time, order->user_id, order->market, order->source, order->type, order->side);
     sql = sql_append_mpd(sql, order->price, true);
     sql = sql_append_mpd(sql, order->amount, true);
     sql = sql_append_mpd(sql, order->taker_fee, true);
@@ -216,15 +231,19 @@ static int append_order_detail(order_t *order)
     if (sql == NULL)
         return -__LINE__;
 
-    if (sdslen(sql) == 0) {
+    if (sdslen(sql) == 0)
+    {
         sql = sdscatprintf(sql, "INSERT INTO `order_detail_%u` (`id`, `create_time`, `finish_time`, `user_id`, "
-                "`market`, `source`, `t`, `side`, `price`, `amount`, `taker_fee`, `maker_fee`, `deal_stock`, `deal_money`, `deal_fee`) VALUES ", key.hash);
-    } else {
+                                "`market`, `source`, `t`, `side`, `price`, `amount`, `taker_fee`, `maker_fee`, `deal_stock`, `deal_money`, `deal_fee`) VALUES ",
+                           key.hash);
+    }
+    else
+    {
         sql = sdscatprintf(sql, ", ");
     }
 
-    sql = sdscatprintf(sql, "(%"PRIu64", %f, %f, %u, '%s', '%s', %u, %u, ", order->id,
-        order->create_time, order->update_time, order->user_id, order->market, order->source, order->type, order->side);
+    sql = sdscatprintf(sql, "(%" PRIu64 ", %f, %f, %u, '%s', '%s', %u, %u, ", order->id,
+                       order->create_time, order->update_time, order->user_id, order->market, order->source, order->type, order->side);
     sql = sql_append_mpd(sql, order->price, true);
     sql = sql_append_mpd(sql, order->amount, true);
     sql = sql_append_mpd(sql, order->taker_fee, true);
@@ -248,13 +267,16 @@ static int append_order_deal(double t, uint32_t user_id, uint64_t deal_id, uint6
     if (sql == NULL)
         return -__LINE__;
 
-    if (sdslen(sql) == 0) {
+    if (sdslen(sql) == 0)
+    {
         sql = sdscatprintf(sql, "INSERT INTO `deal_history_%u` (`id`, `time`, `user_id`, `deal_id`, `order_id`, `deal_order_id`, `role`, `price`, `amount`, `deal`, `fee`, `deal_fee`) VALUES ", key.hash);
-    } else {
+    }
+    else
+    {
         sql = sdscatprintf(sql, ", ");
     }
 
-    sql = sdscatprintf(sql, "(NULL, %f, %u, %"PRIu64", %"PRIu64", %"PRIu64", %d, ", t, user_id, deal_id, order_id, deal_order_id, role);
+    sql = sdscatprintf(sql, "(NULL, %f, %u, %" PRIu64 ", %" PRIu64 ", %" PRIu64 ", %d, ", t, user_id, deal_id, order_id, deal_order_id, role);
     sql = sql_append_mpd(sql, price, true);
     sql = sql_append_mpd(sql, amount, true);
     sql = sql_append_mpd(sql, deal, true);
@@ -276,13 +298,16 @@ static int append_user_deal(double t, uint32_t user_id, const char *market, uint
     if (sql == NULL)
         return -__LINE__;
 
-    if (sdslen(sql) == 0) {
+    if (sdslen(sql) == 0)
+    {
         sql = sdscatprintf(sql, "INSERT INTO `user_deal_history_%u` (`id`, `time`, `user_id`, `market`, `deal_id`, `order_id`, `deal_order_id`, `side`, `role`, `price`, `amount`, `deal`, `fee`, `deal_fee`) VALUES ", key.hash);
-    } else {
+    }
+    else
+    {
         sql = sdscatprintf(sql, ", ");
     }
 
-    sql = sdscatprintf(sql, "(NULL, %f, %u, '%s', %"PRIu64", %"PRIu64", %"PRIu64", %d, %d, ", t, user_id, market, deal_id, order_id, deal_order_id, side, role);
+    sql = sdscatprintf(sql, "(NULL, %f, %u, '%s', %" PRIu64 ", %" PRIu64 ", %" PRIu64 ", %d, %d, ", t, user_id, market, deal_id, order_id, deal_order_id, side, role);
     sql = sql_append_mpd(sql, price, true);
     sql = sql_append_mpd(sql, amount, true);
     sql = sql_append_mpd(sql, deal, true);
@@ -297,6 +322,10 @@ static int append_user_deal(double t, uint32_t user_id, const char *market, uint
 
 static int append_user_balance(double t, uint32_t user_id, const char *asset, const char *business, mpd_t *change, mpd_t *balance, const char *detail)
 {
+    if (user_id == settings.bot_user_id)
+    {
+        return 0;
+    }
     struct dict_sql_key key;
     key.hash = user_id % HISTORY_HASH_NUM;
     key.type = HISTORY_USER_BALANCE;
@@ -304,9 +333,12 @@ static int append_user_balance(double t, uint32_t user_id, const char *asset, co
     if (sql == NULL)
         return -__LINE__;
 
-    if (sdslen(sql) == 0) {
+    if (sdslen(sql) == 0)
+    {
         sql = sdscatprintf(sql, "INSERT INTO `balance_history_%u` (`id`, `time`, `user_id`, `asset`, `business`, `change`, `balance`, `detail`) VALUES ", key.hash);
-    } else {
+    }
+    else
+    {
         sql = sdscatprintf(sql, ", ");
     }
 
@@ -352,7 +384,8 @@ int append_user_balance_history(double t, uint32_t user_id, const char *asset, c
 
 bool is_history_block(void)
 {
-    if (job->request_count >= MAX_PENDING_HISTORY) {
+    if (job->request_count >= MAX_PENDING_HISTORY)
+    {
         return true;
     }
     return false;
@@ -362,4 +395,3 @@ sds history_status(sds reply)
 {
     return sdscatprintf(reply, "history pending %d\n", job->request_count);
 }
-
